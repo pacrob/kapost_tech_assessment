@@ -1,7 +1,7 @@
 import unittest
 import boto3
 import bucket_actions as ba
-
+import os
 
 class BucketTests(unittest.TestCase):
 
@@ -25,9 +25,16 @@ class BucketTests(unittest.TestCase):
         self.assertIsNotNone(bucketA_name)
         self.assertIsNotNone(bucketA_instance)
 
-        # can create test file
+        # can create test file of specified size
+        file_size = 50
+        file_content = 'z'
+        file_name = 'test_file_1'
 
-            
+        test_file = ba.create_temp_file(file_size, file_name, file_content)
+
+        new_file_size = os.stat(file_name).st_size    
+        self.assertEqual(file_size, new_file_size)
+
         # can upload file to bucket
 
         

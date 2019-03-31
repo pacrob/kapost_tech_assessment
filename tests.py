@@ -1,30 +1,29 @@
 import unittest
-import bucket_actions
+import bucket_actions as ba
 
 
 class BucketTests(unittest.TestCase):
 
-    # can reach AWS
+    def test_copy_bucket_files(self):
+
+        # can create bucket
+
+        pass
+
+        # can upload file to bucket
 
 
 
-    # can create bucket
+        # can get sizes files in a bucket
 
 
 
-    # can upload file to bucket
+        # can copy a file from one bucket to another
 
 
 
-    # can get sizes files in a bucket
+        # can copy all files larger than a given size in MB 
+        # from one bucket to another
 
-
-
-    # can copy a file from one bucket to another
-
-
-
-    # can copy all files larger than a given size in MB 
-    # from one bucket to another
-
-
+if __name__ == '__main__':
+    unittest.main()

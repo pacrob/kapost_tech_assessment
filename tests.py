@@ -27,26 +27,39 @@ class BucketTests(unittest.TestCase):
 
         # can create test file of specified size in MB
         fileA_size_MB = 2
-        file_content = 'z'
+        fileB_size_MB = 4
+        fileC_size_MB = 5
         fileA = 'fileA'
+        fileB = 'fileB'
+        fileC = 'fileC'
+        file_content = 'z'
 
         ba.create_temp_file(fileA_size_MB, fileA, file_content)
+        ba.create_temp_file(fileB_size_MB, fileB, file_content)
+        ba.create_temp_file(fileC_size_MB, fileC, file_content)
 
         new_file_size = os.stat(fileA).st_size    
-        print(f"new size is {new_file_size}")
         fileA_size_in_bytes = fileA_size_MB * ba.MBYTES
         self.assertEqual(fileA_size_in_bytes, new_file_size)
 
         # can upload file to bucket and make sure its there
 
-        bucketA_object = s3_resource.Object(
+        bucketA_objectA = s3_resource.Object(
                 bucket_name=bucketA_name, key=fileA)
+        bucketA_objectB = s3_resource.Object(
+                bucket_name=bucketA_name, key=fileB)
+        bucketA_objectC = s3_resource.Object(
+                bucket_name=bucketA_name, key=fileC)
 
-        bucketA_object.upload_file(fileA)
+        bucketA_objectA.upload_file(fileA)
+        bucketA_objectB.upload_file(fileB)
+        bucketA_objectC.upload_file(fileC)
 
         file_list = ba.get_files_in_bucket(s3_resource, bucketA_name)
 
         self.assertIn(fileA, file_list)
+        self.assertIn(fileB, file_list)
+        self.assertIn(fileC, file_list)
 
         # can get size of a file in a bucket
 
@@ -69,12 +82,20 @@ class BucketTests(unittest.TestCase):
 
         ba.empty_bucket(s3_resource, bucketB_name)
 
-        fileB = 'fileB'
-        ba.create_temp_file(4, fileB, 'z')
-        bucketA_object.upload_file(fileB)
-        fileC = 'fileC'
-        ba.create_temp_file(6, fileC, 'z')
-        bucketA_object.upload_file(fileC)
+        
+        files_in_bucketA = ba.get_files_in_bucket(s3_resource, bucketA_name)
+        ## will move files B and C over to bucketB, but not fileA
+        ## by looking for files larger than 3 MB
+        target_size = 3
+
+        ba.copy_to_bucket_if_larger_than(s3_resource, bucketA_name,
+                                         bucketB_name, target_size)
+
+        files_in_bucketB = ba.get_files_in_bucket(s3_resource, bucketB_name)
+
+        self.assertIn(fileB, files_in_bucketB)
+        self.assertIn(fileC, files_in_bucketB)
+        self.assertNotIn(fileA, files_in_bucketB)
 
         # empty and delete test buckets
 

@@ -45,3 +45,10 @@ def copy_to_bucket(s3_connection, bucket_from_name, bucket_to_name, file_name):
 def empty_bucket(s3_connection, bucket_name):
     for key in s3_connection.Bucket(bucket_name).objects.all():
         key.delete()
+
+def copy_to_bucket_if_larger_than(s3_connection, from_bucket, to_bucket, size):
+    from_files = get_files_in_bucket(s3_connection, from_bucket)
+    for file_name in from_files:
+        if (get_file_size(s3_connection, from_bucket, file_name) / MBYTES) > size:
+            copy_to_bucket(s3_connection, from_bucket, to_bucket, file_name)
+

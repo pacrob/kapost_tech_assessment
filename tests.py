@@ -34,7 +34,7 @@ class BucketTests(unittest.TestCase):
 
         new_file_size = os.stat(fileA).st_size    
         print(f"new size is {new_file_size}")
-        fileA_size_in_bytes = fileA_size_MB * ba.MB
+        fileA_size_in_bytes = fileA_size_MB * ba.MBYTES
         self.assertEqual(fileA_size_in_bytes, new_file_size)
 
         # can upload file to bucket and make sure its there
@@ -51,7 +51,7 @@ class BucketTests(unittest.TestCase):
         # can get size of a file in a bucket
 
         retrieved_fileA_size = ba.get_file_size(s3_resource, bucketA_name, fileA)
-        self.assertEqual(retrieved_fileA_size, fileA_size_MB * ba.MB)
+        self.assertEqual(retrieved_fileA_size, fileA_size_MB * ba.MBYTES)
         
         # can copy a file from one bucket to another
 
@@ -67,6 +67,8 @@ class BucketTests(unittest.TestCase):
         # can copy all files larger than a given size in MB 
         # from one bucket to another
 
+        ba.empty_bucket(s3_resource, bucketB_name)
+
         fileB = 'fileB'
         ba.create_temp_file(4, fileB, 'z')
         bucketA_object.upload_file(fileB)
@@ -76,14 +78,10 @@ class BucketTests(unittest.TestCase):
 
         # empty and delete test buckets
 
-        bucketA_bucket = s3_resource.Bucket(bucketA_name)
-        for key in bucketA_bucket.objects.all():
-            key.delete()
-        bucketA_bucket.delete()
-        bucketB_bucket = s3_resource.Bucket(bucketB_name)
-        for key in bucketB_bucket.objects.all():
-            key.delete()
-        bucketB_bucket.delete()
+        ba.empty_bucket(s3_resource, bucketA_name)
+        s3_resource.Bucket(bucketA_name).delete()
+        ba.empty_bucket(s3_resource, bucketB_name)
+        s3_resource.Bucket(bucketB_name).delete()
 
 if __name__ == '__main__':
     unittest.main()

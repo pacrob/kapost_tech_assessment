@@ -4,6 +4,8 @@
 import boto3
 import uuid
 
+MBYTES = 1000000
+
 def create_bucket_name(bucket_prefix):
     return ''.join([bucket_prefix, str(uuid.uuid4())])
 
@@ -18,8 +20,9 @@ def create_bucket(bucket_prefix, s3_connection):
     return bucket_name, bucket_response
 
 def create_temp_file(size, file_name, file_content):
+    size_in_bytes = int(size * MBYTES)
     with open(file_name, 'w') as f:
-        f.write(str(file_content) * size)
+        f.write(str(file_content) * size_in_bytes)
     return file_name
 
 def get_files_in_bucket(s3_connection, bucket_name):

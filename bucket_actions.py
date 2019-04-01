@@ -48,7 +48,10 @@ def empty_bucket(s3_connection, bucket_name):
 
 def copy_to_bucket_if_larger_than(s3_connection, from_bucket, to_bucket, size):
     from_files = get_files_in_bucket(s3_connection, from_bucket)
+    copied_files_count = 0
     for file_name in from_files:
         if (get_file_size(s3_connection, from_bucket, file_name) / MBYTES) > size:
+            copied_files_count += 1
             copy_to_bucket(s3_connection, from_bucket, to_bucket, file_name)
+    return copied_files_count
 

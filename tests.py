@@ -26,22 +26,32 @@ class BucketTests(unittest.TestCase):
         self.assertIsNotNone(bucketA_instance)
 
         # can create test file of specified size
-        file_size = 50
+        fileA_size = 50
         file_content = 'z'
-        file_name = 'test_file_1'
+        fileA = 'fileA'
 
-        test_file = ba.create_temp_file(file_size, file_name, file_content)
+        ba.create_temp_file(fileA_size, fileA, file_content)
 
-        new_file_size = os.stat(file_name).st_size    
-        self.assertEqual(file_size, new_file_size)
+        new_file_size = os.stat(fileA).st_size    
+        self.assertEqual(fileA_size, new_file_size)
 
-        # can upload file to bucket
+        # can upload file to bucket and make sure its there
+
+        bucketA_object = s3_resource.Object(
+                bucket_name=bucketA_name, key=fileA)
+
+        bucketA_object.upload_file(fileA)
+
+        bucketA_bucket = s3_resource.Bucket(bucketA_name)
+        file_list = []
+        for file in bucketA_bucket.objects.all():
+            file_list.append(file.key)
+
+        self.assertIn(fileA, file_list)
+
+        # can get size of a file in a bucket
 
         
-
-
-        # can get sizes files in a bucket
-
 
 
         # can copy a file from one bucket to another
@@ -50,6 +60,19 @@ class BucketTests(unittest.TestCase):
 
         # can copy all files larger than a given size in MB 
         # from one bucket to another
+
+        fileB = 'fileB'
+        ba.create_temp_file(100, fileB, 'z')
+        bucketA_object.upload_file(fileB)
+        fileC = 'fileC'
+        ba.create_temp_file(150, fileC, 'z')
+        bucketA_object.upload_file(fileC)
+
+        # empty and delete test buckets
+
+        for key in bucketA_bucket.objects.all():
+            key.delete()
+        bucketA_bucket.delete()
 
 if __name__ == '__main__':
     unittest.main()

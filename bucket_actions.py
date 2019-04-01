@@ -20,12 +20,23 @@ def create_bucket(bucket_prefix, s3_connection):
 def create_temp_file(size, file_name, file_content):
     with open(file_name, 'w') as f:
         f.write(str(file_content) * size)
+    return file_name
 
-def copy_to_bucket(bucket_from_name, bucket_to_name, file_name):
+def get_files_in_bucket(s3_connection, bucket_name):
+    file_list = []
+    for file in s3_connection.Bucket(bucket_name).objects.all():
+        file_list.append(file.key)
+    return file_list
+
+
+def get_file_size(s3_connection, bucket_name, file_name):
+    return s3_connection.Bucket(bucket_name).Object(file_name).content_length
+
+def copy_to_bucket(s3_connection, bucket_from_name, bucket_to_name, file_name):
     copy_source = {
             'Bucket': bucket_from_name,
             'Key': file_name
             }
-    s3_resource.Object(bucket_to_name, file_name).copy(copy_source)
+    s3_connection.Object(bucket_to_name, file_name).copy(copy_source)
 
 

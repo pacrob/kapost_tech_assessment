@@ -42,19 +42,25 @@ class BucketTests(unittest.TestCase):
 
         bucketA_object.upload_file(fileA)
 
-        bucketA_bucket = s3_resource.Bucket(bucketA_name)
-        file_list = []
-        for file in bucketA_bucket.objects.all():
-            file_list.append(file.key)
+        file_list = ba.get_files_in_bucket(s3_resource, bucketA_name)
 
         self.assertIn(fileA, file_list)
 
         # can get size of a file in a bucket
 
+        retrieved_fileA_size = ba.get_file_size(s3_resource, bucketA_name, fileA)
+        self.assertEqual(retrieved_fileA_size, fileA_size)
         
-
-
         # can copy a file from one bucket to another
+
+        bucketB_name, bucketB_instance = ba.create_bucket(
+                bucket_prefix='bucket-b',
+                s3_connection=s3_resource)
+        
+        ba.copy_to_bucket(s3_resource, bucketA_name, bucketB_name, fileA)
+
+        file_list = ba.get_files_in_bucket(s3_resource, bucketB_name)
+        self.assertIn(fileA, file_list)
 
 
 
@@ -70,9 +76,14 @@ class BucketTests(unittest.TestCase):
 
         # empty and delete test buckets
 
+        bucketA_bucket = s3_resource.Bucket(bucketA_name)
         for key in bucketA_bucket.objects.all():
             key.delete()
         bucketA_bucket.delete()
+        bucketB_bucket = s3_resource.Bucket(bucketB_name)
+        for key in bucketB_bucket.objects.all():
+            key.delete()
+        bucketB_bucket.delete()
 
 if __name__ == '__main__':
     unittest.main()
